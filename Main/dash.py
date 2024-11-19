@@ -2,7 +2,7 @@ import numpy as np
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from query import *
+from Main.query import *
 from datetime import datetime
 from streamlit_modal import Modal
 
@@ -67,7 +67,7 @@ if modal.is_open():
 
 # ****************************** MENU LATERAL ******************************
 
-st.sidebar.image("images/logo.jpg", width=150)
+st.sidebar.image("images\logo.jpg", width=150)
 
 st.sidebar.markdown(f'<h1 style="text-transform: uppercase;">{'Selecione a informação para gerar o gráfico'}</h1>', unsafe_allow_html=True)  
 
