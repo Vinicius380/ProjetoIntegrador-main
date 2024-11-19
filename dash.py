@@ -2,7 +2,7 @@ import numpy as np
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from Main.query import *
+from query import *
 from datetime import datetime
 from streamlit_modal import Modal
 
