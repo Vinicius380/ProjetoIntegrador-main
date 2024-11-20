@@ -3,8 +3,18 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from query import *
+from Gemini.gemini import *
 from datetime import datetime
 from streamlit_modal import Modal
+from graficos import *
+
+
+st.set_page_config(
+    page_title="Dashboard",  # título da página
+    page_icon=":lizard:",  # ícone da página (opcional)
+    layout="wide",  # ou "wide", se preferir layout mais amplo
+    initial_sidebar_state='expanded'    #"collapsed"
+)
 
 # Consultas iniciais nas duas tabelas do banco
 query = "SELECT * FROM tb_registro"
@@ -17,6 +27,9 @@ df['tempo_registro'] = pd.to_datetime(df['tempo_registro'])  # Converter para da
 
 if st.button("Atualizar dados"):     # Botão para atualização dos dados.
     df = conexao(query)
+
+
+# ---------------------- APLICAÇÃO GEMINI -----------------------------------------------
 
 # Configuração do modal
 modal = Modal(
@@ -67,23 +80,9 @@ if modal.is_open():
 
 # ****************************** MENU LATERAL ******************************
 
-st.sidebar.image("images\logo.jpg", width=150)
+st.sidebar.image("images/logo.png", use_container_width=True)
 
 st.sidebar.markdown(f'<h1 style="text-transform: uppercase;">{'Selecione a informação para gerar o gráfico'}</h1>', unsafe_allow_html=True)  
-
-# Seleção da coluna X  |  selectbox ==> Cria uma caixa de seleção na barra lateral. 
-colunaX = st.sidebar.selectbox(
-    "Eixo X",
-    options = ["umidade", "temperatura", "pressao", "altitude", "co2", "poeira", "tempo_registro"],
-    index = 0
-)
-
-# Seleção da coluna Y  |  selectbox ==> Cria uma caixa de seleção na barra lateral. 
-colunaY = st.sidebar.selectbox(
-    "Eixo Y",
-    options = ["umidade", "temperatura", "pressao", "altitude", "co2", "poeira", "tempo_registro"],
-    index = 1
-)
 
 st.sidebar.subheader("Região")
 SP = st.sidebar.checkbox("São Paulo", value=True)
@@ -104,160 +103,152 @@ if ABC:
 if regioes_selecionadas:
     df = df[df["regiao"].isin(regioes_selecionadas)]
 
+
+# Sliders
 # Verificar quais os atributos do filtro. 
-def filtros(atributo):
-    return atributo in [colunaX, colunaY]
+# def filtros(atributo):
+#     return atributo in [colunaX, colunaY]
 
-# Filtro de RANGE ==> SLIDER
-st.sidebar.header("Selecione o filtro")
+# # Filtro de RANGE ==> SLIDER
+# st.sidebar.header("Selecione o filtro")
 
-# UMIDADE
-if filtros("umidade"):
-    umidade_range = st.sidebar.slider(
-        "Umidade",
-        min_value = float(df["umidade"].min()),  # Valor Mínimo.
-        max_value = float(df["umidade"].max()),  # Valor Máximo.
-        value = (float(df["umidade"].min()), float(df["umidade"].max())),  # Faixa de Valores selecionado.
-        step = 0.1   # Incremento para cada movimento do slider.  
-    )
+# # UMIDADE
+# if filtros("umidade"):
+#     umidade_range = st.sidebar.slider(
+#         "Umidade",
+#         min_value = float(df["umidade"].min()),  # Valor Mínimo.
+#         max_value = float(df["umidade"].max()),  # Valor Máximo.
+#         value = (float(df["umidade"].min()), float(df["umidade"].max())),  # Faixa de Valores selecionado.
+#         step = 0.1   # Incremento para cada movimento do slider.  
+#     )
 
-# TEMPERATURA
-if filtros("temperatura"):
-    temperatura_range = st.sidebar.slider(
-        "Temperatura (°C)",
-        min_value = float(df["temperatura"].min()),  # Valor Mínimo.
-        max_value = float(df["temperatura"].max()),  # Valor Máximo.
-        value = (float(df["temperatura"].min()), float(df["temperatura"].max())),  # Faixa de Valores selecionado.
-        step = 0.1   # Incremento para cada movimento do slider. 
-    )
+# # TEMPERATURA
+# if filtros("temperatura"):
+#     temperatura_range = st.sidebar.slider(
+#         "Temperatura (°C)",
+#         min_value = float(df["temperatura"].min()),  # Valor Mínimo.
+#         max_value = float(df["temperatura"].max()),  # Valor Máximo.
+#         value = (float(df["temperatura"].min()), float(df["temperatura"].max())),  # Faixa de Valores selecionado.
+#         step = 0.1   # Incremento para cada movimento do slider. 
+#     )
 
-# PRESSÃO
-if filtros("pressao"):
-    pressao_range = st.sidebar.slider(
-        "Pressao",
-        min_value = float(df["pressao"].min()),  # Valor Mínimo.
-        max_value = float(df["pressao"].max()),  # Valor Máximo.
-        value = (float(df["pressao"].min()), float(df["pressao"].max())),  # Faixa de Valores selecionado.
-        step = 0.1   # Incremento para cada movimento do slider. 
-    )
+# # PRESSÃO
+# if filtros("pressao"):
+#     pressao_range = st.sidebar.slider(
+#         "Pressao",
+#         min_value = float(df["pressao"].min()),  # Valor Mínimo.
+#         max_value = float(df["pressao"].max()),  # Valor Máximo.
+#         value = (float(df["pressao"].min()), float(df["pressao"].max())),  # Faixa de Valores selecionado.
+#         step = 0.1   # Incremento para cada movimento do slider. 
+#     )
 
-# ALTITUDE
-if filtros("altitude"):
-    altitude_range = st.sidebar.slider(
-        "Altitude",
-        min_value = float(df["altitude"].min()),  # Valor Mínimo.
-        max_value = float(df["altitude"].max()),  # Valor Máximo.
-        value = (float(df["altitude"].min()), float(df["altitude"].max())),  # Faixa de Valores selecionado.
-        step = 0.1   # Incremento para cada movimento do slider. 
-    )
+# # ALTITUDE
+# if filtros("altitude"):
+#     altitude_range = st.sidebar.slider(
+#         "Altitude",
+#         min_value = float(df["altitude"].min()),  # Valor Mínimo.
+#         max_value = float(df["altitude"].max()),  # Valor Máximo.
+#         value = (float(df["altitude"].min()), float(df["altitude"].max())),  # Faixa de Valores selecionado.
+#         step = 0.1   # Incremento para cada movimento do slider. 
+#     )
 
-# CO2
-if filtros("co2"):
-    co2_range = st.sidebar.slider(
-        "CO2",
-        min_value = float(df["co2"].min()),  # Valor Mínimo.
-        max_value = float(df["co2"].max()),  # Valor Máximo.
-        value = (float(df["co2"].min()), float(df["co2"].max())),  # Faixa de Valores selecionado.
-        step = 0.1   # Incremento para cada movimento do slider. 
-    )
+# # CO2
+# if filtros("co2"):
+#     co2_range = st.sidebar.slider(
+#         "CO2",
+#         min_value = float(df["co2"].min()),  # Valor Mínimo.
+#         max_value = float(df["co2"].max()),  # Valor Máximo.
+#         value = (float(df["co2"].min()), float(df["co2"].max())),  # Faixa de Valores selecionado.
+#         step = 0.1   # Incremento para cada movimento do slider. 
+#     )
 
-# POEIRA
-if filtros("poeira"):
-    poeira_range = st.sidebar.slider(
-        "Poeira",
-        min_value = float(df["poeira"].min()),  # Valor Mínimo.
-        max_value = float(df["poeira"].max()),  # Valor Máximo.
-        value = (float(df["poeira"].min()), float(df["poeira"].max())),  # Faixa de Valores selecionado.
-        step = 0.1   # Incremento para cada movimento do slider. 
-    )
-## ************************************ FILTROS TEMPO_REGISTRO *************************************
-if filtros("tempo_registro"):
-    # Extrair as datas mínimas e máximas em formato de datetime
-    min_data = df["tempo_registro"].min()
-    max_data = df["tempo_registro"].max()
+# # POEIRA
+# if filtros("poeira"):
+#     poeira_range = st.sidebar.slider(
+#         "Poeira",
+#         min_value = float(df["poeira"].min()),  # Valor Mínimo.
+#         max_value = float(df["poeira"].max()),  # Valor Máximo.
+#         value = (float(df["poeira"].min()), float(df["poeira"].max())),  # Faixa de Valores selecionado.
+#         step = 0.1   # Incremento para cada movimento do slider. 
+#     )
+# ## ************************************ FILTROS TEMPO_REGISTRO *************************************
+# if filtros("tempo_registro"):
+#     # Extrair as datas mínimas e máximas em formato de datetime
+#     min_data = df["tempo_registro"].min()
+#     max_data = df["tempo_registro"].max()
 
-    # Exibir dois campos de data para seleção de intervalo no sidebar
-    data_inicio = st.sidebar.date_input(
-        "Data de Início", 
-        min_data.date(), 
-        min_value=min_data.date(), 
-        max_value=max_data.date(),
-        format= "DD-MM-YYYY"
-    )
+#     # Exibir dois campos de data para seleção de intervalo no sidebar
+#     data_inicio = st.sidebar.date_input(
+#         "Data de Início", 
+#         min_data.date(), 
+#         min_value=min_data.date(), 
+#         max_value=max_data.date(),
+#         format= "DD-MM-YYYY"
+#     )
     
-    data_fim = st.sidebar.date_input(
-        "Data de Fim", 
-        max_data.date(), 
-        min_value=min_data.date(), 
-        max_value=max_data.date(),
-        format= "DD-MM-YYYY"
-    )
+#     data_fim = st.sidebar.date_input(
+#         "Data de Fim", 
+#         max_data.date(), 
+#         min_value=min_data.date(), 
+#         max_value=max_data.date(),
+#         format= "DD-MM-YYYY"
+#     )
 
-    # Converter as datas selecionadas para datetime, incluindo hora
-    tempo_registro_range = (
-        pd.to_datetime(data_inicio),
-        pd.to_datetime(data_fim) + pd.DateOffset(days=1) - pd.Timedelta(seconds=1)
-    )
+#     # Converter as datas selecionadas para datetime, incluindo hora
+#     tempo_registro_range = (
+#         pd.to_datetime(data_inicio),
+#         pd.to_datetime(data_fim) + pd.DateOffset(days=1) - pd.Timedelta(seconds=1)
+#     )
 
 df_selecionado = df.copy()   # Cria uma copia do df original.:
 
 
-if filtros("umidade"):
-    df_selecionado = df_selecionado[
-        (df_selecionado["umidade"] >= umidade_range[0]) &
-        (df_selecionado["umidade"] <= umidade_range[1])
-    ]
+# if filtros("umidade"):
+#     df_selecionado = df_selecionado[
+#         (df_selecionado["umidade"] >= umidade_range[0]) &
+#         (df_selecionado["umidade"] <= umidade_range[1])
+#     ]
 
-if filtros("temperatura"):
-    df_selecionado = df_selecionado[
-        (df_selecionado["temperatura"] >= temperatura_range[0]) &
-        (df_selecionado["temperatura"] <= temperatura_range[1])
-    ]
+# if filtros("temperatura"):
+#     df_selecionado = df_selecionado[
+#         (df_selecionado["temperatura"] >= temperatura_range[0]) &
+#         (df_selecionado["temperatura"] <= temperatura_range[1])
+#     ]
 
-if filtros("pressao"):
-    df_selecionado = df_selecionado[
-        (df_selecionado["pressao"] >= pressao_range[0]) &
-        (df_selecionado["pressao"] <= pressao_range[1])
-    ]
+# if filtros("pressao"):
+#     df_selecionado = df_selecionado[
+#         (df_selecionado["pressao"] >= pressao_range[0]) &
+#         (df_selecionado["pressao"] <= pressao_range[1])
+#     ]
     
-if filtros("altitude"):
-    df_selecionado = df_selecionado[
-        (df_selecionado["altitude"] >= altitude_range[0]) &
-        (df_selecionado["altitude"] <= altitude_range[1])
-    ]
+# if filtros("altitude"):
+#     df_selecionado = df_selecionado[
+#         (df_selecionado["altitude"] >= altitude_range[0]) &
+#         (df_selecionado["altitude"] <= altitude_range[1])
+#     ]
 
-if filtros("co2"):
-    df_selecionado = df_selecionado[
-        (df_selecionado["co2"] >= co2_range[0]) &
-        (df_selecionado["co2"] <= co2_range[1])
-    ]
+# if filtros("co2"):
+#     df_selecionado = df_selecionado[
+#         (df_selecionado["co2"] >= co2_range[0]) &
+#         (df_selecionado["co2"] <= co2_range[1])
+#     ]
 
-if filtros("poeira"):
-    df_selecionado = df_selecionado[
-        (df_selecionado["poeira"] >= poeira_range[0]) &
-        (df_selecionado["poeira"] <= poeira_range[1])
-    ] 
+# if filtros("poeira"):
+#     df_selecionado = df_selecionado[
+#         (df_selecionado["poeira"] >= poeira_range[0]) &
+#         (df_selecionado["poeira"] <= poeira_range[1])
+#     ] 
 
-if filtros("tempo_registro"):
-    df_selecionado = df_selecionado[
-        (df_selecionado["tempo_registro"] >= tempo_registro_range[0]) &
-        (df_selecionado["tempo_registro"] <= tempo_registro_range[1])
-    ] 
+# if filtros("tempo_registro"):
+#     df_selecionado = df_selecionado[
+#         (df_selecionado["tempo_registro"] >= tempo_registro_range[0]) &
+#         (df_selecionado["tempo_registro"] <= tempo_registro_range[1])
+#     ] 
 
 
 # **************************** GRÁFICOS ****************************
     
 def Home():
-    with st.expander("Tabela"):
-        mostrarDados = st.multiselect(
-            "Filtro: ",
-            df_selecionado.columns,
-            default=[],
-            key = "showData_home"
-        )
-        
-        if mostrarDados:
-            st.write(df_selecionado[mostrarDados])
     
     # Cálculos estatísticos
     if not df_selecionado.empty:
@@ -282,121 +273,27 @@ def Home():
 # **************************** PLOTANDO GRÁFICOS ****************************
 def graficos():
     st.title("Dashboard Monitoramento")
-       
-    aba1, aba2, aba3, aba4, aba5  = st.tabs(
-        ["Gráfico de Barras",
-        "Gráfico de Linhas",
-        "Gráfico de Dispersão",
-        "Gráfico de Área",
-        "Gráfico de Barras Agrupado"]
-        )
     
-    with aba1:
-        if df_selecionado.empty:
-            st.write("Nenhum dado está disponível para gerar gráficos")
-            return
+    if df_selecionado.empty:
+        st.write("Nenhum dado está disponível para gerar gráficos")
+        return
+    else:
         
-        if colunaX == colunaY:
-            st.warning("Selecione uma opção diferente para os eixos X e Y")
-            return
-        
-        try:           
-            grupo_dados1 = df_selecionado.groupby(by=[colunaX]).size().reset_index(name="contagem")
-            fig_valores = px.bar(
-                grupo_dados1,       # De onde vem os dados.
-                x = colunaX,        # Eixo X
-                y = "contagem",     # Eixo Y com o nome que nós renomeamos no GrupBy
-                orientation = "v",  # Orientação do Gráfico
-                title = f"Contagem de Registros por {colunaX.capitalize()}", # Titulo do gráfico => A função capitalize() deixa tudo em maiúsculo. 
-                color_discrete_sequence = ["#0083b8"],       # Altera a cor 
-                template = "plotly_white"
-            )
-            
-        except Exception as e:
-            st.error(f"Erro ao criar gráfico de barras:  {e}")
-        st.plotly_chart(fig_valores, use_container_width=True)
+        # # Grafico 1
+        col1, space, col2 = st.columns([10, 5, 10])
 
-    with aba2:
-        if df_selecionado.empty:
-            st.write("Nenhum dado está disponível para gerar gráficos")
-            return
-
-        if colunaX == colunaY:
-            st.warning("Selecione uma opção diferente para os eixos X e Y")
-            return
-
-        try:
-            grupo_dados2 = df_selecionado.groupby(by=[colunaX])[colunaY].mean().reset_index(name=colunaY)
-            fig_valores2 = px.line(
-                grupo_dados2,
-                x=colunaX,
-                y=colunaY,
-                title=f"Gráfico de Linhas: {colunaX.capitalize()} vs {colunaY.capitalize()}",
-                line_shape='linear',  # Tipo de linha
-                markers=True  # Para mostrar marcadores nos pontos
-            )
-        except Exception as e:
-            st.error(f"Erro ao criar gráfico de linhas: {e}")
-        st.plotly_chart(fig_valores2, use_container_width=True)
- 
-    with aba3:
-        if df_selecionado.empty:
-            st.write("Nenhum dado está disponível para gerar gráficos")
-            return
-
-        if colunaX == colunaY:
-            st.warning("Selecione uma opção diferente para os eixos X e Y")
-            return
-
-        try:
-            grupo_dados3 = df_selecionado.groupby(by=[colunaX]).size().reset_index(name=colunaY)
-            fig_valores3 = px.scatter(grupo_dados3, x = colunaX, y = colunaY)    
-            
-            st.plotly_chart(fig_valores3, use_container_width=True)
-            
-        except Exception as e:
-            st.error(f"Erro ao criar gráfico de dispersão: {e}")
-    
-    with aba4:
-        if df_selecionado.empty:
-            st.write("Nenhum dado está disponível para gerar gráficos")
-            return
+        with col1:
+            grafico1(df_selecionado)
+            grafico2(df_selecionado)
         
-        if colunaX == colunaY:
-            st.warning("Selecione uma opção diferente para os eixos X e Y")
-            return
+        # Grafico 3 
+        with col2:
+            grafico3(df_selecionado)
+        # Grafico 4
+            grafico4(df_selecionado)
         
-        try:
-            grupo_dados4 = df_selecionado.groupby(by=[colunaX]).size().reset_index(name=colunaY)
-            st.area_chart(grupo_dados4, x = colunaX, y = colunaY, color= ["#0083b8"], stack="center" )
-
-        except Exception as e:
-            st.error(f"Erro ao criar gráfico de dispersão: {e}")
-        
-    with aba5:
-        if df_selecionado.empty:
-            st.write('Nenhum dado está disponível para gerar o gráfico')
-            return
-        
-        if colunaX == colunaY:
-            st.warning('Selecione uma opção diferente para os eixos X e Y')
-            return
-        
-        try:
-            grupo_dados5 = df_selecionado
-            
-            fig_barra = px.bar(grupo_dados5, 
-                               x=colunaX,
-                               y=colunaY,
-                               color='regiao',
-                               barmode='group',
-                               title='Comparação entre regiões'
-                               )
-            
-            st.plotly_chart(fig_barra, use_container_width=True)
-            
-        except Exception as e:
-            print(f'Erro ao criar o gráfico: {e}')
+        # Grafico 5
+        grafico5(df_selecionado)
 
 # **************************** CHAMANDO A FUNÇÃO ****************************
 Home()
@@ -404,3 +301,21 @@ if SP == ABC == False:
     st.warning("Nenhum dado encontrado para os filtros selecionados!")
 else:
     graficos()
+    rodape_html = """
+    <style>
+    footer {
+        position: relative; /* Permite que o rodapé seja colocado após o conteúdo */
+        bottom: 0;
+        width: 100%;
+        text-align: center;
+        padding: 10px 0;
+        font-size: 14px;
+        color: #333;
+        
+    }
+    </style>
+    <footer>
+        <p>Copyright © 2024 - Todos os direitos reservados - Equipe Lagartixa</p>
+    </footer>
+    """
+    st.markdown(rodape_html, unsafe_allow_html=True)
