@@ -21,7 +21,7 @@ mybd = SQLAlchemy(app)      # Cria uma instância do SQLAlchemy, passando a apli
 mqtt_dados = {}
 
 def conexao_sensor(client, userdata, flags, rc):
-    client.subscribe("projeto_integrado/SENAI134/Cienciadedados/GrupoX")
+    client.subscribe("projeto_integrado/SENAI134/Cienciadedados/Grupo1")
 
 def msg_sensor(client, userdata, msg):
     global mqtt_dados
@@ -36,8 +36,8 @@ def msg_sensor(client, userdata, msg):
             pressao = mqtt_dados.get('pressure')
             altitude = mqtt_dados.get('altitude')
             umidade = mqtt_dados.get('humidity')
-            co2 = mqtt_dados.get('co2')
-            poeira = 0
+            co2 = mqtt_dados.get('CO2')
+            poeira = mqtt_dados.get("particula1")
             tempo_registro = mqtt_dados.get('timestamp')
             regiao = 'Grande ABC'
             
