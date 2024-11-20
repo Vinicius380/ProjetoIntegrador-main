@@ -6,25 +6,37 @@ from query import *
 from datetime import datetime
 from streamlit_modal import Modal
 
-def grafico1(df_selecionado):
-    # Grafico 1
-    # Seleção da coluna X  |  selectbox ==> Cria uma caixa de seleção na barra lateral. 
-    colunaX = st.selectbox(
-        "Eixo X",
-        options = ["umidade", "temperatura", "pressao", "altitude", "co2", "poeira", "tempo_registro"],
-        index = 0,
-        key='eixox1'
-    )
+def grafico_barras(df_selecionado):
+    
+    with st.expander("Selecione os eixos"):
+        # Seleção da coluna X  |  selectbox ==> Cria uma caixa de seleção na barra lateral. 
+        colunaX = st.selectbox(
+            "Eixo X",
+            options = ["umidade", "temperatura", "pressao", "altitude", "CO2", "poeira"],
+            index = 0,
+            key='eixox1'
+        )
+        
+        colunaY = st.selectbox(
+            "Eixo Y",
+            options = ["umidade", "temperatura", "pressao", "altitude", "CO2", "poeira"],
+            index = 1,
+            key='eixoy1'
+        )
+    
+    if colunaX == colunaY:
+        st.warning("Selecione uma opção diferente para os eixos X e Y")
+        return
     
     try:           
-        grupo_dados1 = df_selecionado.groupby(by=[colunaX]).size().reset_index(name="contagem")
+        grupo_dados1 = df_selecionado.groupby(by=[colunaX])[colunaY].mean().reset_index(name=colunaY)
         fig_valores = px.bar(
             grupo_dados1,       # De onde vem os dados.
             x = colunaX,        # Eixo X
-            y = "contagem",     # Eixo Y com o nome que nós renomeamos no GrupBy
+            y = colunaY,     # Eixo Y com o nome que nós renomeamos no GrupBy
             orientation = "v",  # Orientação do Gráfico
-            title = f"Contagem de Registros por {colunaX.capitalize()}", # Titulo do gráfico => A função capitalize() deixa tudo em maiúsculo. 
-            color_discrete_sequence = ["#455354"],       # Altera a cor 
+            title = f"Gráfico de Barras: {colunaX.capitalize()} vs {colunaY.capitalize()}",
+            color_discrete_sequence = ["#455354"],        
             template = "plotly_white"
         )
         
@@ -32,23 +44,24 @@ def grafico1(df_selecionado):
         st.error(f"Erro ao criar gráfico de barras:  {e}")
     st.plotly_chart(fig_valores, use_container_width=True)
     
-def grafico2(df_selecionado):
-    # Grafico 2
+def grafico_linhas(df_selecionado):
     # Seleção da coluna X  |  selectbox ==> Cria uma caixa de seleção na barra lateral. 
-    colunaX = st.selectbox(
-        "Eixo X",
-        options = ["umidade", "temperatura", "pressao", "altitude", "co2", "poeira", "tempo_registro"],
-        index = 0,
-        key='eixox2'
-    )
+   
+    with st.expander("Selecione os eixos"):
+        colunaX = st.selectbox(
+            "Eixo X",
+            options = ["tempo_registro"],
+            index = 0,
+            key='eixox2'
+        )
 
-    # Seleção da coluna Y  |  selectbox ==> Cria uma caixa de seleção na barra lateral. 
-    colunaY = st.selectbox(
-        "Eixo Y",
-        options = ["umidade", "temperatura", "pressao", "altitude", "co2", "poeira", "tempo_registro"],
-        index = 1,
-        key='eixoy2'
-    )
+        # Seleção da coluna Y  |  selectbox ==> Cria uma caixa de seleção na barra lateral. 
+        colunaY = st.selectbox(
+            "Eixo Y",
+            options = ["umidade", "temperatura", "pressao", "CO2", "poeira"],
+            index = 1,
+            key='eixoy2'
+        )
     
     if colunaX == colunaY:
         st.warning("Selecione uma opção diferente para os eixos X e Y")
@@ -71,23 +84,23 @@ def grafico2(df_selecionado):
         st.error(f"Erro ao criar gráfico de barras:  {e}")
     st.plotly_chart(fig_valores2, use_container_width=True)
     
-def grafico3(df_selecionado):
-    # Grafico 3
+def grafico_dispersao(df_selecionado):
     # Seleção da coluna X  |  selectbox ==> Cria uma caixa de seleção na barra lateral. 
-    colunaX = st.selectbox(
-        "Eixo X",
-        options = ["umidade", "temperatura", "pressao", "altitude", "co2", "poeira", "tempo_registro"],
-        index = 0,
-        key='eixox3'
-    )
+    with st.expander("Selecione os eixos"):    
+        colunaX = st.selectbox(
+            "Eixo X",
+            options = ["umidade", "temperatura", "pressao", "altitude", "CO2", "poeira", "tempo_registro"],
+            index = 0,
+            key='eixox3'
+        )
 
-    # Seleção da coluna Y  |  selectbox ==> Cria uma caixa de seleção na barra lateral. 
-    colunaY = st.selectbox(
-        "Eixo Y",
-        options = ["umidade", "temperatura", "pressao", "altitude", "co2", "poeira", "tempo_registro"],
-        index = 1,
-        key='eixoy3'
-    )
+        # Seleção da coluna Y  |  selectbox ==> Cria uma caixa de seleção na barra lateral. 
+        colunaY = st.selectbox(
+            "Eixo Y",
+            options = ["umidade", "temperatura", "pressao", "altitude", "CO2", "poeira", "tempo_registro"],
+            index = 1,
+            key='eixoy3'
+        )
     
     if colunaX == colunaY:
         st.warning("Selecione uma opção diferente para os eixos X e Y")
@@ -103,23 +116,23 @@ def grafico3(df_selecionado):
     except Exception as e:
         st.error(f"Erro ao criar gráfico de dispersão: {e}")
         
-def grafico4(df_selecionado):
-    # Grafico 3
+def grafico_area(df_selecionado):
     # Seleção da coluna X  |  selectbox ==> Cria uma caixa de seleção na barra lateral. 
-    colunaX = st.selectbox(
-        "Eixo X",
-        options = ["umidade", "temperatura", "pressao", "altitude", "co2", "poeira", "tempo_registro"],
-        index = 0,
-        key='eixox4'
-    )
+    with st.expander("Selecione os eixos"):
+        colunaX = st.selectbox(
+            "Eixo X",
+            options = ["tempo_registro"],
+            index = 0,
+            key='eixox4'
+        )
 
-    # Seleção da coluna Y  |  selectbox ==> Cria uma caixa de seleção na barra lateral. 
-    colunaY = st.selectbox(
-        "Eixo Y",
-        options = ["umidade", "temperatura", "pressao", "altitude", "co2", "poeira", "tempo_registro"],
-        index = 1,
-        key='eixoy4'
-    )
+        # Seleção da coluna Y  |  selectbox ==> Cria uma caixa de seleção na barra lateral. 
+        colunaY = st.selectbox(
+            "Eixo Y",
+            options = ["umidade", "temperatura", "pressao", "altitude", "CO2", "poeira"],
+            index = 1,
+            key='eixoy4'
+        )
     
     if colunaX == colunaY:
         st.warning("Selecione uma opção diferente para os eixos X e Y")
@@ -129,25 +142,25 @@ def grafico4(df_selecionado):
         st.area_chart(grupo_dados4, x = colunaX, y = colunaY, color= ["#455354"], stack="center" )
 
     except Exception as e:
-        st.error(f"Erro ao criar gráfico de dispersão: {e}")
+        st.error(f"Erro ao criar gráfico de area: {e}")
         
-def grafico5(df_selecionado):
-    # Grafico 5
+def grafico_barrasEmpilhadas(df_selecionado):
     # Seleção da coluna X  |  selectbox ==> Cria uma caixa de seleção na barra lateral. 
-    colunaX = st.selectbox(
-        "Eixo X",
-        options = ["umidade", "temperatura", "pressao", "altitude", "co2", "poeira", "tempo_registro"],
-        index = 0,
-        key='eixox5'
-    )
+    with st.expander("Selecione os eixos"): 
+        colunaX = st.selectbox(
+            "Eixo X",
+            options = ["umidade", "temperatura", "pressao", "altitude", "CO2", "poeira", "tempo_registro"],
+            index = 0,
+            key='eixox5'
+        )
 
-    # Seleção da coluna Y  |  selectbox ==> Cria uma caixa de seleção na barra lateral. 
-    colunaY = st.selectbox(
-        "Eixo Y",
-        options = ["umidade", "temperatura", "pressao", "altitude", "co2", "poeira", "tempo_registro"],
-        index = 1,
-        key='eixoy5'
-    )
+        # Seleção da coluna Y  |  selectbox ==> Cria uma caixa de seleção na barra lateral. 
+        colunaY = st.selectbox(
+            "Eixo Y",
+            options = ["umidade", "temperatura", "pressao", "altitude", "CO2", "poeira", "tempo_registro"],
+            index = 1,
+            key='eixoy5'
+        )
     
     if colunaX == colunaY:
         st.warning("Selecione uma opção diferente para os eixos X e Y")
@@ -172,4 +185,4 @@ def grafico5(df_selecionado):
         st.plotly_chart(fig_barra, use_container_width=True)
     
     except Exception as e:
-        print(f'Erro ao criar o gráfico: {e}')
+        print(f'Erro ao criar o gráfico de barras empilhadas: {e}')

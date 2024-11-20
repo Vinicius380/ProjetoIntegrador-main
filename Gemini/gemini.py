@@ -2,6 +2,17 @@
 import google.generativeai as genai
 from query import *
 from dash import df, df_memoria
+import numpy as np
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+from query import *
+from Gemini.gemini import *
+from datetime import datetime
+from streamlit_modal import Modal
+from graficos import *
+
+
 
 #Conexão com a API Gemini e configuração do modelo
 GOOGLE_API_KEY= ('AIzaSyBuq3bDGCnA95jVmawwQq8fpUGxd4-_66s')
