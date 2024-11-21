@@ -67,18 +67,18 @@ def grafico_linhas(df_selecionado):
         st.warning("Selecione uma opção diferente para os eixos X e Y")
         return
     
-    try:           
-        grupo_dados2 = df_selecionado.groupby(by=[colunaX])[colunaY].mean().reset_index(name=colunaY)
+    try: 
+        cores_personalizadas = {'São Paulo': '#455354', 'Grande ABC': '#77A074'}          
         fig_valores2 = px.line(
-            grupo_dados2,
+            df_selecionado,
             x=colunaX,
             y=colunaY,
+            color="regiao",
             title=f"Gráfico de Linhas: {colunaX.capitalize()} vs {colunaY.capitalize()}",
-            line_shape='linear',  # Tipo de linha
+            color_discrete_map=cores_personalizadas,
+            line_shape='linear', 
             markers=True  # Para mostrar marcadores nos pontos
         )   
-        
-        fig_valores2.update_traces(line_color="#455354")
         
     except Exception as e:
         st.error(f"Erro ao criar gráfico de barras:  {e}")
@@ -106,10 +106,15 @@ def grafico_dispersao(df_selecionado):
         st.warning("Selecione uma opção diferente para os eixos X e Y")
         return
     try:
-        grupo_dados3 = df_selecionado.groupby(by=[colunaX]).size().reset_index(name=colunaY)
-        fig_valores3 = px.scatter(grupo_dados3, x = colunaX, y = colunaY)  
-        fig_valores3.update_traces(marker_color="#455354")
-        fig_valores3.update_traces(marker_color="#455354", marker_size=10, marker_symbol="circle")  
+        cores_personalizadas = {'São Paulo': '#455354', 'Grande ABC': '#77A074'}
+        fig_valores3 = px.scatter(
+            df_selecionado, 
+            x = colunaX, 
+            y = colunaY,
+            color='regiao',
+            title=f"Gráfico de Dispersão por Região: {colunaX.capitalize()} vs {colunaY.capitalize()}",
+            color_discrete_map = cores_personalizadas                        
+            )  
         
         st.plotly_chart(fig_valores3, use_container_width=True)
             
@@ -165,20 +170,18 @@ def grafico_barrasEmpilhadas(df_selecionado):
     if colunaX == colunaY:
         st.warning("Selecione uma opção diferente para os eixos X e Y")
         return
-    try:
-        grupo_dados5 = df_selecionado
-        
+    try:   
         cores_personalizadas = {
             'São Paulo': '#455354',  # Cor para a região Norte
             'Grande ABC': '#77A074'    # Cor para a região Sul
         }
     
-        fig_barra = px.bar(grupo_dados5, 
+        fig_barra = px.bar(df_selecionado, 
                             x=colunaX,
                             y=colunaY,
                             color='regiao',
                             barmode='group',
-                            title='Comparação entre regiões',
+                            title='Gráfico de Barras Empilhadas por Região',
                             color_discrete_map= cores_personalizadas
                             )
         
