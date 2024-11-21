@@ -5,6 +5,8 @@ import plotly.express as px
 from query import *
 from datetime import datetime
 from streamlit_modal import Modal
+import scipy.stats as stats
+import plotly.graph_objects as go
 
 def grafico_barras(df_selecionado):
     with st.expander("Selecione os eixos"): 
@@ -141,6 +143,24 @@ def grafico_dispersao(df_selecionado):
         return
 
     try:
+        
+        # Se a coluna X for 'tempo_registro', converta para um valor numérico (exemplo: número de dias)
+        if colunaX == "tempo_registro":
+            df_selecionado[colunaX] = (df_selecionado[colunaX] - df_selecionado[colunaX].min()).dt.total_seconds() / (60 * 60 * 24)  # dias
+        # Se a coluna Y for 'tempo_registro', converta para um valor numérico (exemplo: número de dias)
+        if colunaY == "tempo_registro":
+            df_selecionado[colunaY] = (df_selecionado[colunaY] - df_selecionado[colunaY].min()).dt.total_seconds() / (60 * 60 * 24)  # dias      
+        
+        # Calcula a regressão linear
+        x = df_selecionado[colunaX]
+        y = df_selecionado[colunaY]
+        
+        # Realiza a regressão linear usando scipy
+        slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
+        
+        # Calcula a linha de regressão (y = mx + b)
+        linha_regressao = slope * x + intercept
+             
         cores_personalizadas = {'São Paulo': '#455354', 'Grande ABC': '#77A074'}
         fig_dispersao = px.scatter(
             df_selecionado,
@@ -151,6 +171,18 @@ def grafico_dispersao(df_selecionado):
             color_discrete_map=cores_personalizadas,
             template="plotly_white"
         )
+        
+        # Adiciona a linha de regressão ao gráfico
+        fig_dispersao.add_trace(
+            go.Scatter(
+                x=x,
+                y=linha_regressao,
+                mode='lines',
+                name=f"Regressão Linear",
+                line=dict(color='red', dash='dash')
+            )
+        )
+        
         st.plotly_chart(fig_dispersao, use_container_width=True)
 
     except Exception as e:
