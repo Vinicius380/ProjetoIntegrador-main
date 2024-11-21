@@ -8,13 +8,11 @@ from datetime import datetime
 from streamlit_modal import Modal
 from graficos import *
 
-
 st.set_page_config(
     page_title="Dashboard",  # título da página
     page_icon=":lizard:",  # ícone da página (opcional)
     layout="wide",  # ou "wide", se preferir layout mais amplo
-    initial_sidebar_state='expanded'    #"collapsed"
-)
+    initial_sidebar_state='expanded')
 
 # Consultas iniciais nas duas tabelas do banco
 query = "SELECT * FROM tb_registro"
@@ -51,151 +49,44 @@ if ABC:
 # Filtrando o DataFrame com base nas regiões selecionadas
 if regioes_selecionadas:
     df = df[df["regiao"].isin(regioes_selecionadas)]
-    
 
+def aplicar_filtros(df):
+    # Filtro por intervalo de tempo
+    if "tempo_registro" in df.columns:
+        # Datas mínimas e máximas
+        min_data = df["tempo_registro"].min()
+        max_data = df["tempo_registro"].max()
 
-# *********************************SLIDERS *****************************
+        # Campos de data no menu lateral
+        data_inicio = st.sidebar.date_input(
+            "Data de Início", 
+            min_data.date(), 
+            min_value=min_data.date(), 
+            max_value=max_data.date()
+        )
+        data_fim = st.sidebar.date_input(
+            "Data de Fim", 
+            max_data.date(), 
+            min_value=min_data.date(), 
+            max_value=max_data.date()
+        )
 
-# Verificar quais os atributos do filtro. 
-# def filtros(atributo):
-#     return atributo in [colunaX, colunaY]
+        # Converter as datas selecionadas para datetime
+        tempo_registro_range = (
+            pd.to_datetime(data_inicio),
+            pd.to_datetime(data_fim) + pd.DateOffset(days=1) - pd.Timedelta(seconds=1)
+        )
 
-# # Filtro de RANGE ==> SLIDER
-# st.sidebar.header("Selecione o filtro")
+        # Filtrar o DataFrame pelo intervalo de tempo
+        df = df[
+            (df["tempo_registro"] >= tempo_registro_range[0]) &
+            (df["tempo_registro"] <= tempo_registro_range[1])
+        ]
 
-# # UMIDADE
-# if filtros("umidade"):
-#     umidade_range = st.sidebar.slider(
-#         "Umidade",
-#         min_value = float(df["umidade"].min()),  # Valor Mínimo.
-#         max_value = float(df["umidade"].max()),  # Valor Máximo.
-#         value = (float(df["umidade"].min()), float(df["umidade"].max())),  # Faixa de Valores selecionado.
-#         step = 0.1   # Incremento para cada movimento do slider.  
-#     )
-
-# # TEMPERATURA
-# if filtros("temperatura"):
-#     temperatura_range = st.sidebar.slider(
-#         "Temperatura (°C)",
-#         min_value = float(df["temperatura"].min()),  # Valor Mínimo.
-#         max_value = float(df["temperatura"].max()),  # Valor Máximo.
-#         value = (float(df["temperatura"].min()), float(df["temperatura"].max())),  # Faixa de Valores selecionado.
-#         step = 0.1   # Incremento para cada movimento do slider. 
-#     )
-
-# # PRESSÃO
-# if filtros("pressao"):
-#     pressao_range = st.sidebar.slider(
-#         "Pressao",
-#         min_value = float(df["pressao"].min()),  # Valor Mínimo.
-#         max_value = float(df["pressao"].max()),  # Valor Máximo.
-#         value = (float(df["pressao"].min()), float(df["pressao"].max())),  # Faixa de Valores selecionado.
-#         step = 0.1   # Incremento para cada movimento do slider. 
-#     )
-
-# # ALTITUDE
-# if filtros("altitude"):
-#     altitude_range = st.sidebar.slider(
-#         "Altitude",
-#         min_value = float(df["altitude"].min()),  # Valor Mínimo.
-#         max_value = float(df["altitude"].max()),  # Valor Máximo.
-#         value = (float(df["altitude"].min()), float(df["altitude"].max())),  # Faixa de Valores selecionado.
-#         step = 0.1   # Incremento para cada movimento do slider. 
-#     )
-
-# # CO2
-# if filtros("co2"):
-#     co2_range = st.sidebar.slider(
-#         "CO2",
-#         min_value = float(df["co2"].min()),  # Valor Mínimo.
-#         max_value = float(df["co2"].max()),  # Valor Máximo.
-#         value = (float(df["co2"].min()), float(df["co2"].max())),  # Faixa de Valores selecionado.
-#         step = 0.1   # Incremento para cada movimento do slider. 
-#     )
-
-# # POEIRA
-# if filtros("poeira"):
-#     poeira_range = st.sidebar.slider(
-#         "Poeira",
-#         min_value = float(df["poeira"].min()),  # Valor Mínimo.
-#         max_value = float(df["poeira"].max()),  # Valor Máximo.
-#         value = (float(df["poeira"].min()), float(df["poeira"].max())),  # Faixa de Valores selecionado.
-#         step = 0.1   # Incremento para cada movimento do slider. 
-#     )
-# ## ************************************ FILTROS TEMPO_REGISTRO *************************************
-# if filtros("tempo_registro"):
-#     # Extrair as datas mínimas e máximas em formato de datetime
-#     min_data = df["tempo_registro"].min()
-#     max_data = df["tempo_registro"].max()
-
-#     # Exibir dois campos de data para seleção de intervalo no sidebar
-#     data_inicio = st.sidebar.date_input(
-#         "Data de Início", 
-#         min_data.date(), 
-#         min_value=min_data.date(), 
-#         max_value=max_data.date(),
-#         format= "DD-MM-YYYY"
-#     )
-    
-#     data_fim = st.sidebar.date_input(
-#         "Data de Fim", 
-#         max_data.date(), 
-#         min_value=min_data.date(), 
-#         max_value=max_data.date(),
-#         format= "DD-MM-YYYY"
-#     )
-
-#     # Converter as datas selecionadas para datetime, incluindo hora
-#     tempo_registro_range = (
-#         pd.to_datetime(data_inicio),
-#         pd.to_datetime(data_fim) + pd.DateOffset(days=1) - pd.Timedelta(seconds=1)
-#     )
-
-# if filtros("umidade"):
-#     df_selecionado = df_selecionado[
-#         (df_selecionado["umidade"] >= umidade_range[0]) &
-#         (df_selecionado["umidade"] <= umidade_range[1])
-#     ]
-
-# if filtros("temperatura"):
-#     df_selecionado = df_selecionado[
-#         (df_selecionado["temperatura"] >= temperatura_range[0]) &
-#         (df_selecionado["temperatura"] <= temperatura_range[1])
-#     ]
-
-# if filtros("pressao"):
-#     df_selecionado = df_selecionado[
-#         (df_selecionado["pressao"] >= pressao_range[0]) &
-#         (df_selecionado["pressao"] <= pressao_range[1])
-#     ]
-    
-# if filtros("altitude"):
-#     df_selecionado = df_selecionado[
-#         (df_selecionado["altitude"] >= altitude_range[0]) &
-#         (df_selecionado["altitude"] <= altitude_range[1])
-#     ]
-
-# if filtros("co2"):
-#     df_selecionado = df_selecionado[
-#         (df_selecionado["co2"] >= co2_range[0]) &
-#         (df_selecionado["co2"] <= co2_range[1])
-#     ]
-
-# if filtros("poeira"):
-#     df_selecionado = df_selecionado[
-#         (df_selecionado["poeira"] >= poeira_range[0]) &
-#         (df_selecionado["poeira"] <= poeira_range[1])
-#     ] 
-
-# if filtros("tempo_registro"):
-#     df_selecionado = df_selecionado[
-#         (df_selecionado["tempo_registro"] >= tempo_registro_range[0]) &
-#         (df_selecionado["tempo_registro"] <= tempo_registro_range[1])
-#     ] 
-
+    # Retorna o DataFrame filtrado
+    return df
 
 # **************************** HOME****************************
-    
 def Home():
   
     # Título principal
@@ -263,7 +154,7 @@ def Home():
         unsafe_allow_html=True
     )   
 
-# **************************** MEDIAS****************************
+# ****************************MEDIAS****************************
 
     # Verifique se o DataFrame selecionado não está vazio
     if df_selecionado.empty:
@@ -319,30 +210,35 @@ def Home():
     st.markdown("<div style='height: 30px;'></div>", unsafe_allow_html=True)
 
 # **************************** PLOTANDO GRÁFICOS ****************************
-def graficos():
+def graficos(df):
     
-    if df_selecionado.empty:
-        st.write("Nenhum dado está disponível para gerar gráficos")
+    # Verifica se há dados no DataFrame
+    if df.empty:
+        st.warning("Nenhum dado disponível para os filtros aplicados.")
         return
-    else:
-        col1, space, col2 = st.columns([10, 5, 10])
 
-        with col1:
-            grafico_barras(df_selecionado)
-            grafico_linhas(df_selecionado)
-        
-        with col2:
-            grafico_dispersao(df_selecionado)
-            grafico_area(df_selecionado)
-        
-        grafico_barrasEmpilhadas(df_selecionado)
+    # Plotagem dos gráficos
+    col1, space, col2 = st.columns([10, 5, 10])
+
+    with col1:
+        grafico_barras(df)
+        grafico_linhas(df)
+
+    with col2:
+        grafico_dispersao(df)
+        grafico_area(df)
+
+    grafico_barrasEmpilhadas(df)
 
 # **************************** CHAMANDO A FUNÇÃO ****************************
+
+df_filtrado = aplicar_filtros(df)
+
 Home()
-if SP == ABC == False:
+if df_filtrado.empty:
     st.warning("Nenhum dado encontrado para os filtros selecionados!")
 else:
-    graficos()
+    graficos(df_filtrado)
     rodape_html = """
     <style>
     footer {
