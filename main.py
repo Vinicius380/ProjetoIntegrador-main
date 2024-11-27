@@ -13,7 +13,7 @@ app = Flask("registro")     # Nome do aplicativo.
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False    # Configura o SQLAlchemy para rastrear modificações. 
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:senai%40134@127.0.0.1/bd_medidor'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:525748@127.0.0.1/bd_medidor'
 
 mybd = SQLAlchemy(app)      # Cria uma instância do SQLAlchemy, passando a aplicação Flask como parâmetro. 
 
@@ -36,8 +36,13 @@ def msg_sensor(client, userdata, msg):
             pressao = mqtt_dados.get('pressure')
             altitude = mqtt_dados.get('altitude')
             umidade = mqtt_dados.get('humidity')
+<<<<<<< HEAD
             co2 = mqtt_dados.get('CO2')
             poeira = mqtt_dados.get("particula1")
+=======
+            co2 = mqtt_dados.get('co2') #co2
+            poeira = 0 # mqtt_dados.get('poeira1')
+>>>>>>> 82f5336b5a4ceda8f8a6e5f21d61593e1449f236
             tempo_registro = mqtt_dados.get('timestamp')
             regiao = 'Grande ABC'
             
